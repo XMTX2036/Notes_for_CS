@@ -2,109 +2,179 @@
 
 在本实验中，需要向xv6中增加一些新的系统调用
 
-## **Lab2前置要求**
+**Lab2前置要求**
 
 - 阅读xv6 book的第2章、第4章4.3以及4.4
 - 系统调用的用户空间代码在`user/user.h`和`user/usys.pl`中
 - 内核空间代码是`kernel/syscall.h`， `kernel/syscall.c`
 - 与进程相关的代码是`kernel/proc.h`和`kernel/proc.c`
 
-## **Note**
+## System call tracing
 
-### Chapter2 
+- 将trace的函数原型加入`user.h`
 
-- The operating system must *time-share* the resources of the computer among these processes.
-- Thus an operating system must fulfill three requirements: **multiplexing**, **isolation**, and **interaction**.
+  ```C
+  // user.h
+  int trace(int);
+  ```
 
-- Focus on a monolithic kernel(also there is microkernel)
-- Xv6 runs on a multi-core RISC-V microprocessor(written in "LP64" C)
+- 将存根加入usys.pl
 
-#### 2.1 Abstracting physcial resources
+  ```C
+  // usys.pl
+  entry("trace");
+  ```
 
-- To achieve strong isolation it’s helpful to forbid applications from directly accessing sensitive hardware resources, and instead to abstract the resources into services
+- 根据第二条hint，在`syscall.h`中加入系统调用号(macro)
 
-#### 2.2 User mode, supervisor mode, and system calls
+  ```C
+  #define SYS_trace  22
+  ```
 
-- Strong isolation requires**a hard boundary between applications and the OS**
+- 在`kernel/sysproc.c`中添加一个`sys_trace`函数
 
-- mode
+  ```C
+  uint64
+  sys_trace(void)
+  {
+    int mask;
+    if(argint(0, &mask) < 0) return -1;
+    myproc()->mask = mask;
+  
+    return 0;
+  }
+  ```
 
-  - machine mode
+- 在`proc`结构体中加入mask对应上述函数的mask变量
 
-    - have full privilege
+  ```C
+  struct proc{
+    // ...
+    int mask;
+  };
+  ```
 
-    - a CPU starts in machine mode
+- 对syscall中的`syscall`函数进行修改，使其输出trace跟踪的结果
 
-    - intended for configuring a computer
-    - Xv6 executes a few lines in machine mode and then changes to supervisor mode
+  ```C
+  void
+  syscall(void)
+  {
+    const char *syscall_names[] = {"fork", "exit", "wait", "pipe", "read",
+    "kill", "exec", "fstat", "chdir", "dup", "getpid", "sbrk", "sleep",
+    "uptime", "open", "write", "mknod", "unlink", "link", "mkdir", "close", "trace", "sysinfo"};
+  
+    int num;
+    struct proc *p = myproc();
+  
+    num = p->trapframe->a7;
+    if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
+      p->trapframe->a0 = syscalls[num]();
+      if ((p->mask) & (1 << num)) printf("%d: syscall %s -> %d\n", p->pid, syscall_names[num-1], p->trapframe->a0);
+    } else {
+      printf("%d %s: unknown sys call %d\n",
+              p->pid, p->name, num);
+      p->trapframe->a0 = -1;
+    }
+  }
+  ```
 
-  - supervisor mode
+- 同时需要在`syscall.c`中增加对于函数的声明
 
-    - the CPU is allowed to execute privileged instructions
-    - e.g. interrupts, reading and writing the register that holds the addr. of a page table
-    - user space & kernel space
-    - **entry point** for transitions to supervisor mode is controlled by the kernel
+  ```C
+  // kernel/syscall.c
+  extern uint64 sys_trace(void);
+  
+  static uint64 (*syscalls[])(void) = {
+  // ...
+  [SYS_trace]   sys_trace,
+  
+  };
+  ```
 
-#### 2.3 Kernel Organization
+- 在`fork`函数中，将父进程的mask值复制给子进程
 
-===> What part of the OS should run in supervisor mode?
+  ```C
+  // kernel/proc.c
+  int
+  fork(void)
+  {
+    ...
+    np->mask = p->mask;
+    ...
+  }
+  ```
 
-All implementations of all system calls run in supervisor mode. This organization is called **a monolithic kernel**
+## Sysinfo
 
-- The entire OS run with full hardware privilege
-- Disadvantage of the monolithic kernel: the interfaces between different parts of the OS are often complex
+在最开始的user.h以及usys.pl文件中的操作与前面的trace非常类似，在此不做赘述
 
-===> To reduce the risk of mistakes in the kernel, minimize the amount of OS code that runs in supervisor mode, and execute the bulk of the OS in user mode. This kernel organizationi is called **microkernel**
+- 由于sysinfo需要统计当前系统的相关信息 ===> 剩余可用空间/已用线程数 ===> 需要对应的函数
 
-<img src="/Users/xmtx/Library/Application Support/typora-user-images/截屏2022-08-16 23.23.42.png" alt="截屏2022-08-16 23.23.42" style="zoom:50%;" />
+  ```C
+  // nproc ===> kernel/proc.c
+  uint64 
+  nproc(void)
+  {
+    uint64 num = 0;
+    for(int i=0; i<NPROC; i++){
+      if(proc[i].state != UNUSED) num++;
+    }
+    return num;
+  }
+  // freemem ===> kernel/kallo.c
+  uint64
+  freemem(void)
+  {
+    uint64 size = 0;
+    struct run *r = kmem.freelist;
+    int cnt = 0;
+    while(r){
+      cnt++;
+      r = r->next;
+    }
+    size = cnt*PGSIZE;
+  
+    return size;
+  }
+  ```
 
-- the kernel interface consists of a few low-level functions for starting applications, sending messages, accessing device hardware, etc (make the kernel relatively simple)
+- 在`kernel/sysproc.c`中添加一个`sys_trace`函数
 
-#### 2.4 Code: xv6 organization
+  ```C
+  uint64
+  sys_sysinfo(void)
+  {
+    uint64 addr;
+    if(argaddr(0, &addr) < 0) return -1;
+    struct proc *p = myproc();
+    struct sysinfo sinfo;
+    sinfo.freemem = freemem();
+    sinfo.nproc = nproc();
+  
+    if(copyout(p->pagetable, addr, (char *)&sinfo, sizeof(sinfo)) < 0) return -1;
+    return 0;
+  }
+  ```
 
-Skip
+- 和sys_trace相同，需要在`syscall.c`中增加函数的声明
 
-#### 2.5 Process Overview
+  ```C
+  // kernel/syscall.c
+  extern uint64 sys_sysinfo(void);
+  
+  static uint64 (*syscalls[])(void) = {
+  // ...
+  [SYS_sysinfo]   sys_sysinfo,
+  
+  };
+  ```
 
-The unit of isolation in xv6 (as in other Unix operating systems) is a **process**. 
+## 心得
 
-- Xv6 uses page tables (which are implemented by hardware) to give each process its own ad- dress space
-  - page table is process-independent
+- hint很重要，其中会给出完成整个实验的需要完成的事(几乎每一步都有涉及到)
 
-<img src="/Users/xmtx/Library/Application Support/typora-user-images/截屏2022-08-16 23.37.46.png" alt="截屏2022-08-16 23.37.46" style="zoom:50%;" />
+- 对于各种.c文件中新增的函数，函数声明应当放在`kernel/defs.h`中；一度因为这个问题迷惑很久
 
-- The xv6 kernel maintains many pieces of state for each process, which it gathers into a struct proc (`kernel/proc.h`:86)
+  
 
-- A process’s most important pieces of kernel state are its **page table**, its **kernel stack**, and its **run state**.
-- in RISC-V, ecall(switch to kernel space)/sret(return to user space) 
-
-#### 2.6 Code: starting xv6, the first process and system call
-
-```mermaid
-graph TB
-A:id["Hardware: Power On"] ---> B:id["RISC-V M Mode: Bootloader"];
-B:id["RISC-V M Mode: Bootloader"] ---> C:id["RISC-V S Mode: Kernel"]
-```
-
-**More Specific**:
-
-- The boot loader loads the xv6 kernel into memory at physical addr. 0x80000000. (0x0:0x8000000 contains I/O devices)
-- The stack on RISC-V grows down(the code at _entry loads the sp = stack0+4096).
-- The function *start* performs some configuration that is only allowed in M mode, and then switches to S mode(RISC-V `mret`).
-- `start` sets things up as if there had been one ===> 
-  - set the previous privilege mode to supervisor in `mstatus`
-  - set the return addr. to main by writing main's addr. into `mepc`
-  - disable virtual addr. translation in S mode by writing 0 into the (page-table register) `satp`; delegates all interrupts and exceptions to S mode
-- After main initializes several devices and subsystems, **the first process by calling `userinit`** is created
-
-- Then make the first system call in xv6. initcode.S loads the number of the exec system call
-- The kernel uses the number in register a7 in syscall to call the desired system call.
-- Once the kernel has completed `exec`, it returns to user space in the /init process.
-
-#### 2.7 Security Model
-
-### Chapter4
-
-#### 4.3 Code: Calling system calls
-
-#### 4.4 Code: System call arguments 
