@@ -88,7 +88,7 @@ Modeling & Viewing
 
   <img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-07-08%2000.49.09.png" alt="截屏2022-07-08 00.49.09" style="zoom:50%;" />
 
-  <img src="/Users/xmtx/Library/Application Support/typora-user-images/截屏2022-07-08 00.50.27.png" alt="截屏2022-07-08 00.50.27" style="zoom:50%;" />
+  <img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-07-08%2000.50.27.png" alt="截屏2022-07-08 00.50.27" style="zoom:50%;" />
 
 - Viewing Transformations
 
