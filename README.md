@@ -7,4 +7,13 @@ There are my notes and codes for my self-learning courses~
 | CS106L   | C++     | Stanford   | ✅      | ✅(Lab3 Only)  |
 | 6.S081   | OS      | MIT        | Lec1~4 | Lab1/2        |
 | GAMES101 | CG      | UCSB       | Lec1~4 | Assignment0/1 |
+| 15-213   | CSAPP   | CMU        | Lec1-2 | Not yet       |
+
+## CS106L
+
+主要介绍标准 C++ 的特性和语法，正如第一节课Intro中介绍的一样：
+
+>  Focus on **code**; what makes it good, what **powerful** and **elegant** code looks like
+
+其中个人感觉比较有用的内容是lambda function, move semantics，RAII等
 
