@@ -130,109 +130,74 @@ For floats ===> No
 
 ## Lec2 Bits, Bytes and Integers
 
-### Everything is bits
-
-- Each bit is 0 or 1
-
-- Base 2 Number Representation
-
-### Encoding Byte Values
-
-- Byte = 8 bits
-  - $00000000_2$ to $111111111_2$
-  - $0_{10}$ to $255_{10}$
-  - $00_{16}$ to $FF_{16}$
+### Bits & Bytes
 
 <img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-08-21%2017.37.48.png" alt="截屏2022-08-21 17.37.48" style="zoom:50%;" />
 
-### Boolean Algebra
+### **Unsigned & Signed Values**
 
-And& Or| Not~ Exclusive-Or^
+Unsigned: $B2U = \Sigma_{i=0}^{w-1}x_i2^i$
 
-- Operate on Bit Vectors
+Signed: $B2T=-x_{w-1}2^{w-1}+\Sigma_{i=0}^{w-2}x_i2^i$
 
-#### Example: Representing & Manipulating Sets
+### Casting Surprises
 
-- Width w bit vector represents subsets of $\{0, ..., w-1\}$
+- If there is a mix of unsigned and signed in single expression, **signed values implicitly cast to unsigned**
 
-  - $a_j=1$ if $j \in A$
-    - 01101001 {0, 3, 5, 6}
-    - 01010101 {0, 2, 4, 6}
-
-- Operations
-
-  - & Intersection
-  - | Union
-  - ^ Symmetric difference
-  - ~ Complement
-
-- Bit-Level Operations in C
-
-  - & | ~ ^ Available in C
-
-- Logic Operations in C
-
-  - &&, ||, !
-    - Early termination
-    - Anything nonzero as True
-    - e.g. `p && *p` avoid null pointer access
-
-- Shift Operations(fill 0)
-
-  - Left Shift: `x << y`
-
-  - Right Shift: `x >> y`
-
-  - Undefined Behavior
-
-    Shift amount < 0 or >= word sizd
-
-### Integers
-
-Unsigned & Signed
-
-#### Numeric Ranges
-
-- Unsigned Values
-
-  $B2U = \Sigma_{i=0}^{w-1}x_i2^i$
-
-  - UMin = 0
-
-    000..0
-
-  - UMax = $2^w-1$
-
-    111..1
-
-- Two's Complement Values(有一位为符号位)
-
-  $B2T=-x_{w-1}2^{w-1}+\Sigma_{i=0}^{w-2}x_i2^i$
-
-  - TMin = $-2^{w-1}$
-  - TMax = $2^{w-1}-1$
-
-- Other Values
-
-  - Minus 1
-
-    111.11
-
-<img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-08-21%2017.58.54.png" alt="截屏2022-08-21 17.58.54" style="zoom:50%;" />
-
-- Values for Different Word Sizes
-
-  <img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-08-21%2018.08.05.png" alt="截屏2022-08-21 18.08.05" style="zoom:50%;" />
-
-  <img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-08-21%2018.08.25.png" alt="截屏2022-08-21 18.08.25" style="zoom:50%;" />
-
-  - C Programming
+  - e.g.
 
     ```C
-    #include <limits.h>
-    ULONG_MAX
-    LONG_MAX
-    LONG_MIN
+    -1 > 0U;
+    2147483647U < -2147483647-1;
     ```
 
-    
+- Casting signed <===> unsigned: adding/subtracing $2^w$
+
+### Expanding & Truncating
+
+===> Truncating: 
+
+- Unsigned:
+
+  11011 = 1+2+8+16 = 27
+
+  Drop the highest: 1011 = 1+2+8 = 11(do module operation)
+
+- Signed:
+
+  1011 = -13
+
+  011 = 3 
+
+### Why Should I use Unsigned?
+
+**Don't use without understanding implications**
+
+```C
+// Easy to make mistakes
+unsigned i;
+for(i=cnt-2; i>=0; i--){
+  a[i] += a[i+1];
+}
+
+// Can be very subtle
+#define DELTA sizeof(int)
+int i;
+for(i=CNT; i-DELTA>=0; i-=DELTA){
+  // ...
+}
+
+// Proper way to use unsigned as loop index
+unsigned i;
+for(i=cnt-2; i<cnt; i--){
+  a[i] += a[i+1];
+}
+// Even better
+size_t i;
+for(i=cnt-2; i<cnt; i--){
+  a[i] += a[i+1];
+}
+```
+
+### Representations in memory, pointers, strings
+
