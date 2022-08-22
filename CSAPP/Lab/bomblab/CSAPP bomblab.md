@@ -472,4 +472,62 @@ c
 
 <img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-08-21%2023.49.51.png" alt="截屏2022-08-21 23.49.51" style="zoom:50%;" />
 
-​		由上图可见，六个数字已被读入stack中
+​		由上图可见，六个数字已被读入stack中，此时$rsp指向刚刚读入的六个数字
+
+<img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-08-22%2013.08.48.png" alt="截屏2022-08-22 13.08.48" style="zoom:50%;" />
+
+​		下面这段代码则是phase_2函数的汇编代码，下一步将执行`cmp DWORD PTR [rsp], 0x1`的命令，即要求我们输入的第一个数必须为1，若不满足则爆破炸弹；随后则是进行一个循环===> 要求前一个数必须为后一个数的1/2 ===> 等比数列，则可知输入应为`1 2 4 8 16 32`
+
+<img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-08-22%2013.09.53.png" alt="截屏2022-08-22 13.09.53" style="zoom:50%;" />
+
+### Phase3
+
+该函数内部调用了sscanf，根据其格式化字符串我们可以得知：本轮要求输入应为两个整数
+
+<img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-08-22%2013.19.01.png" alt="截屏2022-08-22 13.19.01" style="zoom:50%;" />
+
+​		在执行过sscanf后，我们可以看到输入的两个数字`2 707`已经在栈中了
+
+<img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-08-22%2014.09.27.png" alt="截屏2022-08-22 14.09.27" style="zoom:50%;" />
+
+注意，此处eax寄存器接受了函数的返回值2，因此下一步将进行跳转！
+
+<img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-08-22%2014.29.54.png" alt="截屏2022-08-22 14.29.54" style="zoom:50%;" />
+
+​		此处即为phase_3的具体代码，主体为一个分支结构
+
+### Phase4
+
+​		由下面的截图可知，该函数内部调用了sscanf，由格式化字符串可知，此处需要的输入依旧为两个整数
+
+<img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-08-22%2014.32.16.png" alt="截屏2022-08-22 14.32.16" style="zoom:50%;" />
+
+​		下列为phase_4函数的汇编代码，根据函数末尾的条件可知，`DWORD PTR [rsp+0xc]`的值必须为0，否则将引爆炸弹；
+
+<img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-08-22%2014.35.00.png" alt="截屏2022-08-22 14.35.00" style="zoom:50%;" />
+
+​		下列是phase_4函数中func4的具体内容，可以发现该函数内部是递归实现的，由于存在phase_4函数最终`DWORD PTR [rsp+0xc]`的值必须为0的条件，即func4的返回值以及传入的第二个数字要为0===>输入应为`7 0` 
+
+<img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-08-22%2014.39.18.png" alt="截屏2022-08-22 14.39.18" style="zoom:50%;" />
+
+### Phase5
+
+对于phase_5内部，要求输入为字符串且长度为6
+
+![截屏2022-08-22 14.43.54](https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-08-22%2014.43.54.png)
+
+下面为phase_5的汇编代码：
+
+<img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-08-22%2014.46.23.png" alt="截屏2022-08-22 14.46.23" style="zoom:50%;" />
+
+在0x4024b0处为一个名为array.3449的数组，而整个函数
+
+<img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-08-22%2014.45.51.png" alt="截屏2022-08-22 14.45.51" style="zoom:50%;" />
+
+​		此时$rsi寄存器中储存了字符串"flyers"，该函数要求即为，从array.3449中找出对应字母的index，并推出与0xF异或前的值对应的字母
+
+<img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-08-22%2014.49.22.png" alt="截屏2022-08-22 14.49.22" style="zoom:50%;" />
+
+### Phase6
+
+该部分处理与Phase4相类似，在此略过
