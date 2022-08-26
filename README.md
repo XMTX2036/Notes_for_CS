@@ -2,12 +2,13 @@
 
 There are my notes and codes for my self-learning courses~
 
-| Course   | Content | University | Notes  | Labs/Projects |
-| -------- | ------- | ---------- | ------ | ------------- |
-| CS106L   | C++     | Stanford   | ✅      | ✅(Lab3 Only)  |
-| 6.S081   | OS      | MIT        | Lec1~4 | Lab1/2        |
-| GAMES101 | CG      | UCSB       | Lec1~4 | Assignment0/1 |
-| 15-213   | CSAPP   | CMU        | Lec1-2 | Not yet       |
+| Course   | Content             | University | Notes  | Labs/Projects  |
+| -------- | ------------------- | ---------- | ------ | -------------- |
+| CS106L   | C++                 | Stanford   | ✅      | ✅(Lab3 Only)   |
+| 6.S081   | OS                  | MIT        | Lec1~4 | Lab1/2         |
+| GAMES101 | CG                  | UCSB       | Lec1~4 | Assignment0/1  |
+| 15-213   | CSAPP               | CMU        | Lec1-2 | Not yet        |
+| CS61A    | Python, Scheme, SQL | UCB        | Lec1-4 | Project1(Half) |
 
 ## CS106L
 
@@ -17,3 +18,6 @@ There are my notes and codes for my self-learning courses~
 
 其中个人感觉比较有用的内容是lambda function, move semantics，RAII等
 
+### CS61A
+
+之前做了一半的CS61A，把code&Lecture note上传在这里，希望可以完成这门课的Lab & Project
