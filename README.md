@@ -5,7 +5,7 @@ There are my notes and codes for my self-learning courses~
 | Course   | Content             | University | Notes  | Labs/Projects  |
 | -------- | ------------------- | ---------- | ------ | -------------- |
 | CS106L   | C++                 | Stanford   | ✅      | ✅(Lab3 Only)   |
-| 6.S081   | OS                  | MIT        | Lec1~4 | Lab1/2         |
+| 6.S081   | OS                  | MIT        | Lec1~6 | Lab1/2/3/4     |
 | GAMES101 | CG                  | UCSB       | Lec1~4 | Assignment0/1  |
 | 15-213   | CSAPP               | CMU        | Lec1-2 | Not yet        |
 | CS61A    | Python, Scheme, SQL | UCB        | Lec1-4 | Project1(Half) |
