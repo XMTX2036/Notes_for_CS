@@ -263,3 +263,7 @@ backtrace可用于堆栈上发生错误的点上方的函数调用列表；编�
   
     usertrapret();
   ```
+
+**模块测试结果如下**：
+
+<img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-08-28%2023.46.07.png" alt="截屏2022-08-28 23.46.07" style="zoom:50%;" />
