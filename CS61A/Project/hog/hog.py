@@ -142,11 +142,11 @@ def play(strategy0, strategy1, score0=0, score1=0, dice=six_sided,
     # (note that the indentation for the problem 6 prompt (***YOUR CODE HERE***) might be misleading)
     # BEGIN PROBLEM 6
         "*** YOUR CODE HERE ***"
-        # if turn == 0:
-        #     comment = say(score0, score1)
-        # else:
-        #     comment = comment(score0, score1)
-        # turn += 1
+        if turn == 0:
+            comment = say(score0, score1)
+        else:
+            comment = comment(score0, score1)
+        turn += 1
     # END PROBLEM 6
     return score0, score1
 

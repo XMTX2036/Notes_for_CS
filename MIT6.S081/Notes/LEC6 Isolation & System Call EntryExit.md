@@ -99,3 +99,38 @@ argint/ argaddr/ argfd
 最后返回到`kernelvec`中，`kernelvec`将保存的寄存器值从堆栈中弹出，执行`sret`，将`sepc`复制到`pc`来执行之前被打断的kernel code
 
 **Page-fault exceptions would be mentioned in the next lecture!**
+
+
+
+**Topic**: user ===> kernel translation
+
+- system calls, faults, interrupts enter the kernel in the same way
+- important for isolation and performance
+
+**What can S mode do?**
+
+- Supervisor Mode can use CPU control registers
+
+  - satp -- page table physical address
+
+  - stvec -- ecall jumps here in kernel; points to trampoline
+
+  - sepc -- ecall saves user pc here
+
+  - sscratch -- address of trapframe
+
+- Supervisor Mode can use PTEs that have no PTE_U flag
+
+**`write()`**
+
+- uservec() in trampoline.S     
+- usertrap() in trap.c
+- syscall() in syscall.c
+- sys_write() in sysfile.c
+
+**`write()` return**
+
+- userret() in trampoline.S
+- usertrapret() in trap.c
+
+<img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/IMG_0229.jpg" alt="IMG_0229" style="zoom:50%;" />
