@@ -118,3 +118,53 @@ RISC-V allow more sophisticated plans
   2MB and 1GB
 
 ## Book & Code Note
+
+xv6的exception处理：
+
+- 若发生在user空间中，内核直接杀死故障进程
+- 若发生在内核空间中，内核会直接崩溃
+
+现实应用中的OS处理方式更加有趣
+
+===> use page faults to implement COW fork
+
+fork过程中，使父进程和子进程可以**共用父进程的物理内存**则会更有效率
+
+- 直接分享物理内存会造成进程之间的相互扰乱
+- 可以通过使用页表许可以及page faults来安全地共享物理内存
+- 当使用虚拟地址时，页表中没有映射，或者具有PTE_V标志清晰的映射，或者权限位（PTE_R、PTE_W、PTE_X、PTE_U）禁止尝试操作的虚拟地址时，CPU会引发page fault
+
+RISC-V 3 types of page faults ===> `scause` & `stval`
+
+- load page fault
+- store page fault
+- instruction page fault
+
+**基本步骤/计划**
+
+- 父进程、子进程都映射为只可读(清除PTE_W标志位)
+- 若父子进程都要对页面进行写操作，则CPU发出page fault的异常
+- 内核的trap处理程序通过分配新的物理内存页面并将page fault地址映射到的物理页面复制到其中来响应
+- 内核更改fault进程页面表中的相关PTE，以指向copy并允许r/w，然后根据导致故障的指令恢复故障过程
+
+**优化**
+
+若一个进程出现store page fault，并且物理页面仅从该进程的页面表中引用，则不需要进行copy
+
+**Lazy Allocation**
+
+**过程**
+
+- 当一个应用通过调用`sbrk`想获得更多内存时，内核注意/记录内存的增大，但不会分配物理内存 & 为新的VAddr创建PTE
+- 在其中一个新地址的页面故障中，内核分配一页物理内存并将其映射到页表中
+
+**优点**
+
+- 使分配内存的开销随时间分摊
+
+- 操作系统可以通过为每个page fault分配一批连续的页面，而不是一页，并通过专门化此类页面故障的内核输入/退出代码来降低这一成本。
+
+**其他**
+
+- demand paging
+- paging to disk
