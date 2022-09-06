@@ -5,7 +5,7 @@ There are my notes and codes for my self-learning courses~
 | Course | Content             | University | Notes   | Labs/Projects  |
 | ------ | ------------------- | ---------- | ------- | -------------- |
 | CS106L | C++                 | Stanford   | ✅       | ✅(Lab3 Only)   |
-| 6.S081 | OS                  | MIT        | Lec1~10 | Lab1~5         |
+| 6.S081 | OS                  | MIT        | Lec1~12 | Lab1~6         |
 | 15-213 | CSAPP               | CMU        | Lec1-4  | Lab2           |
 | CS61A  | Python, Scheme, SQL | UCB        | Lec1-4  | Project1(Half) |
 
@@ -20,3 +20,8 @@ There are my notes and codes for my self-learning courses~
 ### CS61A
 
 之前做了一半的CS61A，把code&Lecture note上传在这里，希望可以完成这门课的Lab & Project
+
+## 致谢
+
+本仓库中所有课程的链接&介绍均来自[CS自学指南](https://csdiy.wiki/)
+
