@@ -8,6 +8,7 @@ There are my notes and codes for my self-learning courses~
 | 6.S081 | OS                  | MIT        | Lec1~12 | Lab1~6         |
 | 15-213 | CSAPP               | CMU        | Lec1-4  | Lab2           |
 | CS61A  | Python, Scheme, SQL | UCB        | Lec1-4  | Project1(Half) |
+| CS144  | Computer Network    | Stanford   |         | Lab0           |
 
 ## CS106L
 
@@ -20,6 +21,10 @@ There are my notes and codes for my self-learning courses~
 ### CS61A
 
 之前做了一半的CS61A，把code&Lecture note上传在这里，希望可以完成这门课的Lab & Project
+
+### CS144
+
+[Lab代码](https://github.com/XMTX2036/2021_CS144_Project)
 
 ## 致谢
 
