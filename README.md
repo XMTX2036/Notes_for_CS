@@ -9,6 +9,7 @@ There are my notes and codes for my self-learning courses~
 | 15-213 | CSAPP               | CMU        | Lec1-4  | Lab2           |
 | CS61A  | Python, Scheme, SQL | UCB        | Lec1-4  | Project1(Half) |
 | CS144  | Computer Network    | Stanford   |         | Lab0           |
+| rCore  | OS                  | Tsinghua   |         |                |
 
 ## CS106L
 
