@@ -99,4 +99,133 @@ OS两个功能：
 
 **进程(Process)**
 
-程序的“幻觉”：它是整个计算机系统中当前运行的唯一的程序，能够独占使用处理器、内存和外设，而且程序中的代码和数据是系统内存中唯一的对象
+一个进程是一个具有一定独立功能的程序在一个数据集合上的一次动态执行过程
+
+<img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-10-17%2019.38.43.png" alt="截屏2022-10-17 19.38.43" style="zoom:50%;" />
+
+进程上下文切换
+
+<img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-10-17%2019.39.47.png" alt="截屏2022-10-17 19.39.47" style="zoom:50%;" />
+
+**地址空间**
+
+虚拟(地址)空间Virtual Memory ===> 对物理地址Physical Address/Memory的虚拟化和抽象
+
+- 大 ===> 可能超过计算机的物理内存容量
+- 连续的地址空间编址
+- 私有的 ===> 别的应用程序无法破坏
+
+<img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-10-17%2019.47.46.png" alt="截屏2022-10-17 19.47.46" style="zoom:50%;" />
+
+**文件**
+
+主要用于对持久存储的抽象，并进一步扩展到为外设的抽象
+
+<img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-10-17%2019.48.47.png" alt="截屏2022-10-17 19.48.47" style="zoom:50%;" />
+
+### 操作系统的特征
+
+- 虚拟化 (Virtualization)
+
+  - 内存虚拟化
+
+  - CPU虚拟化
+
+    每个程序都感觉自己是独占CPU的
+
+- 并发性 (Concurrency)
+
+- 异步性
+
+  调度 & 中断
+
+  应用程序执行完成时间不可预测
+
+- 共享性
+
+- 持久性 (Persistency)
+
+## Chapter1 应用程序与基本执行环境
+
+### 应用程序执行环境与平台支持
+
+**应用程序执行环境**
+
+<img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-10-17%2020.30.17.png" alt="截屏2022-10-17 20.30.17" style="zoom:50%;" />
+
+> All problems in computer science can be solved by another level of indirection.
+>
+> -- David Wheeler
+
+硬件分类：
+
+- CPU
+- Memory
+- I/O device
+
+<img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-10-17%2020.26.26.png" alt="截屏2022-10-17 20.26.26" style="zoom:50%;" />
+
+```bash
+write(1, "Hello, world!\n", 14Hello, world!
+)         = 14
+sigaltstack({ss_sp=NULL, ss_flags=SS_DISABLE, ss_size=8192}, NULL) = 0
+munmap(0x7fb9b2850000, 12288)           = 0
+exit_group(0)                           = ?
++++ exited with 0 +++
+```
+
+**平台与目标三元组**
+
+平台主要是指 CPU 类型、操作系统类型和标准运行时库的组合
+
+目标三元组主要是CPU 架构、CPU 厂商、操作系统和运行时库
+
+- 如果用户态基于的内核不同，会导致系统调用接口不同或者语义不一致
+- 如果底层硬件不同，对于硬件资源的访问方式会有差异；特别是如果 ISA 不同，则向软件提供的指令集和寄存器都不同
+
+### 移除标准库依赖
+
+```rust
+// os/src/main.rs
+#![no_main]
+#![no_std]
+mod lang_items;
+// ... other code
+
+
+// os/src/lang_items.rs
+use core::panic::PanicInfo;
+
+#[panic_handler]
+fn panic(_info: &PanicInfo) -> ! {
+    loop {}
+}
+```
+
+### 内核第一条指令
+
+**QEMU启动流程**
+
+- 第一阶段：将必要的文件载入到 Qemu 物理内存之后，Qemu CPU 的程序计数器PC会被初始化为 `0x1000` ，因此 Qemu 实际执行的第一条指令位于物理地址 `0x1000` ，接下来它将执行寥寥数条指令并跳转到物理地址 `0x80000000` 对应的指令处并进入第二阶段。从后面的调试过程可以看出，该地址 `0x80000000` 被固化在 Qemu 中，作为 Qemu 的使用者，我们在不触及 Qemu 源代码的情况下无法进行更改
+- 第二阶段：由于 Qemu 的第一阶段固定跳转到 `0x80000000` ，我们需要将负责第二阶段的 bootloader `rustsbi-qemu.bin` 放在以物理地址 `0x80000000` 开头的物理内存中，这样就能保证 `0x80000000` 处正好保存 bootloader 的第一条指令。在这一阶段，bootloader 负责对计算机进行一些初始化工作，并跳转到下一阶段软件的入口，在 Qemu 上即可实现将计算机控制权移交给我们的内核镜像 `os.bin` 。这里需要注意的是，对于不同的 bootloader 而言，下一阶段软件的入口不一定相同，而且获取这一信息的方式和时间点也不同：入口地址可能是一个预先约定好的固定的值，也有可能是在 bootloader 运行期间才动态获取到的值。我们选用的 RustSBI 则是将下一阶段的入口地址预先约定为固定的 `0x80200000` ，在 RustSBI 的初始化工作完成之后，它会跳转到该地址并将计算机控制权移交给下一阶段的软件——也即我们的内核镜像
+- 第三阶段：为了正确地和上一阶段的 RustSBI 对接，我们需要保证内核的第一条指令位于物理地址 `0x80200000` 处。为此，我们需要将内核镜像预先加载到 Qemu 物理内存以地址 `0x80200000` 开头的区域上。一旦 CPU 开始执行内核的第一条指令，证明计算机的控制权已经被移交给我们的内核，也就达到了本节的目标
+
+**程序内存布局与编译流程**
+
+Memory Layout ===> section
+
+<img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-10-17%2022.34.03.png" alt="截屏2022-10-17 22.34.03" style="zoom:50%;" />
+
+**编译流程**
+
+- **编译器** (Compiler) 将每个源文件从某门高级编程语言转化为汇编语言，注意此时源文件仍然是一个 ASCII 或其他编码的文本文件；
+
+- **汇编器** (Assembler) 将上一步的每个源文件中的文本格式的指令转化为机器码，得到一个二进制的**目标文件** (Object File)；
+
+- **链接器** (Linker) 将上一步得到的所有目标文件以及一些可能的外部目标文件链接在一起形成一个完整的可执行文件
+
+  - 将来自不同目标文件的段在目标内存布局中重新排布
+
+    <img src="https://xmtxpic.oss-cn-hangzhou.aliyuncs.com/img/%E6%88%AA%E5%B1%8F2022-10-17%2022.40.50.png" alt="截屏2022-10-17 22.40.50" style="zoom:50%;" />
+
+  - 将符号替换为具体地址
