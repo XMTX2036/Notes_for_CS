@@ -2,7 +2,7 @@
 
 There are my notes and codes for my self-learning courses~
 
-| Course | Content             | University | Notes   | Labs/Projects  |
+| Course | Content             | University | Notes   | Labs/Projects/Hws |
 | ------ | ------------------- | ---------- | ------- | -------------- |
 | CS106L | C++                 | Stanford   | ✅       | ✅(Lab3 Only)   |
 | 6.S081 | OS                  | MIT        | Lec1~12 | Lab1~6         |
@@ -10,6 +10,7 @@ There are my notes and codes for my self-learning courses~
 | CS61A  | Python, Scheme, SQL | UCB        | Lec1-4  | Project1(Half) |
 | CS144  | Computer Network    | Stanford   |         | Lab0~5           |
 | CS110L | Safety in Systems Programming(Rust) | Stanford |         |                |
+| CS70 | Discrete Math | UCB | Lec1 | Hw0 |
 
 ## CS106L
 
@@ -22,8 +23,6 @@ There are my notes and codes for my self-learning courses~
 ### CS61A
 
 之前做了一半的CS61A，把code&Lecture note上传在这里，希望可以完成这门课的Lab & Project
-
-### CS144
 
 
 
